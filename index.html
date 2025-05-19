@@ -96,7 +96,7 @@
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h3>Liste des Dates de Renouvellement</h3>
+            <h3>Calcul des Dates de Renouvellement</h3>
         </div>
         <div class="card-body">
             <div class="form-group">
@@ -122,12 +122,20 @@
                 </tbody>
             </table>
 
-            <button class="btn btn-primary" id="generateButton">
+            
+            <!-- Champ incrémentable pour le nombre d'impressions -->
+            <div class="form-group">
+				<button class="btn btn-primary" id="generateButton">
                 <i class="material-icons">event</i> Générer les Dates
-            </button>
-            <button class="btn btn-secondary" id="printButton">
+				</button>
+				<button class="btn btn-secondary" id="printButton">
                 <i class="material-icons">print</i> Imprimer le Tableau
-            </button>
+				</button>
+			</div>
+            <div class="form-group">
+                <label for="nombreImpressions">Nombre d'impressions à générer :</label>
+                <input type="number" id="nombreImpressions" class="form-control" value="1" min="1" />
+			</div>
         </div>
     </div>
 
@@ -271,11 +279,12 @@
 
     // Fonction d'impression du tableau
     function imprimerTableau() {
+		let nombreImpressions = parseInt(document.getElementById('nombreImpressions').value); // Récupérer le nombre d'impressions
         const printWindow = window.open('', '', 'height=500, width=800');
         printWindow.document.write('<html><head><title>Impression des Dates de Renouvellement</title>');
         printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">');
         printWindow.document.write('</head><body>');
-		for(let i = 0; i < 3; i++) {
+		for(let i = 0; i < nombreImpressions; i++) {
 			printWindow.document.write('<h3>Dates de Renouvellement</h3>');
 			printWindow.document.write(document.querySelector('.table').outerHTML);
 		}
