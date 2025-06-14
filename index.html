@@ -36,6 +36,14 @@
             background-color: #6200ea;
             color: white;
         }
+        .renouvellementLigne  {
+			display: inline-block;
+			text-align: left;
+			width: 250px;
+		}		
+        .renouvellementLigne a {
+			float : left;
+		}
         /* Style pour la liste des jours fériés */
         .jours-feries-list {
             margin-top: 30px;
@@ -164,10 +172,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" integrity="sha512-pUhApVQtLbnpLtJn6DuzDD5o2xtmLJnJ7oBoMsBnzOkVkpqofGLGPaBJ6ayD2zQe3lCgCibhJBi4cj5wAxwVKA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
-    // Variable pour stocker les jours fériés
     let joursFeries = [];
 
-    // Récupérer l'année en cours
     const anneeEnCours = new Date().getFullYear();
 	function fermerPopup() {		
 		document.getElementById("qrcodePopup").style.display = "none";
@@ -190,29 +196,24 @@
 		document.getElementById("qrcodePopup").style.display = "block";
 
 	}
-    // Fonction pour récupérer les jours fériés de l'API
     async function chargerJoursFeries() {
         try {
             const response = await fetch(`https://calendrier.api.gouv.fr/jours-feries/metropole/${anneeEnCours}.json`);
             const data = await response.json();
 
-            // Stocker les jours fériés dans le tableau joursFeries
             joursFeries = Object.keys(data).map(date => ({
                 date: new Date(date),
                 libelle: data[date]
             }));
 
-            // Afficher la liste des jours fériés dans la div
             let joursFeriesListHTML = '';
             joursFeries.forEach(jour => {
-                //joursFeriesListHTML += `<li>${jour.date.toLocaleDateString("fr-FR")} - ${jour.libelle}</li>`;
                 const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
 				const jourSemaine = jour.date.toLocaleDateString("fr-FR", { weekday: 'long' });
 				joursFeriesListHTML += `<li><strong>${jour.date.toLocaleDateString("fr-FR")}</strong> - ${jour.libelle} - <strong>${jourSemaine.charAt(0).toUpperCase() + jourSemaine.slice(1)}</strong></li>`;
 
             });
 
-            // Insérer la liste HTML dans la div
             document.getElementById("joursFeries").innerHTML = joursFeriesListHTML;
 
         } catch (error) {
@@ -220,48 +221,46 @@
         }
     }
 
-    // Fonction pour générer les dates de renouvellement
-    function genererRenouvellements() {
-        let dateInitiale = new Date(document.getElementById('dateInitiale').value); // Récupérer la date personnalisée
-        let nombreRenouvellements = parseInt(document.getElementById('nombreRenouvellements').value); // Récupérer le nombre de renouvellements
-        let renouvellements = CalculerRenouvellements(dateInitiale, nombreRenouvellements);
+	function genererRenouvellements() {
+		let dateInitiale = new Date(document.getElementById('dateInitiale').value);
+		let nombreRenouvellements = parseInt(document.getElementById('nombreRenouvellements').value);
+		let renouvellements = CalculerRenouvellements(dateInitiale, nombreRenouvellements);
 
-        // Clear table before inserting new rows
-        document.getElementById("renouvellementTable").innerHTML = "";
+		document.getElementById("renouvellementTable").innerHTML = "";
 
-        // Insérer les dates dans le tableau
-        renouvellements.forEach((date, index) => {
+		renouvellements.forEach((date, index) => {
 			let jourSemaine = date.toLocaleDateString("fr-FR", { weekday: 'long' });
 			jourSemaine = jourSemaine.charAt(0).toUpperCase() + jourSemaine.slice(1);
-            let row = `<tr>
-						<td>${index + 1}</td>
-						<td class="text-center">
-							<div style="display: inline-block; text-align: left; width: 200px;">
-							<a href="javascript:void(0);" onclick="genererPopup('R${index+1} = ${date.toLocaleDateString('fr-FR')}')">
-								${date.toLocaleDateString("fr-FR")} - ${jourSemaine}
-							</a>
-							</div>
-						</td>
-					</tr>`;
-            document.getElementById("renouvellementTable").insertAdjacentHTML('beforeend', row);
-        });
-    }
+			const dateStr = `R${index + 1} = ${date.toLocaleDateString("fr-FR")}`;
 
-    // Fonction pour calculer les dates de renouvellement
+			let row = `<tr>
+				<td>${index + 1}</td>
+				<td class="text-center">
+					<div class="renouvellementLigne">						
+					<a href="#" class="ml-2" action="copier-pressepapier" data-date="${dateStr}" title="Copier la date">
+						<span class="material-icons" style="vertical-align: middle; font-size: 18px; color: #6200ea;">content_copy</span>
+					</a>
+					<a style="margin-left: 10px;" href="javascript:void(0);" onclick="genererPopup('${dateStr}')">${dateStr} - ${jourSemaine}</a>
+					</div>
+				</td>
+			</tr>`;
+			document.getElementById("renouvellementTable").insertAdjacentHTML('beforeend', row);
+		});
+	}
+
     function CalculerRenouvellements(dateInitiale, nombreDeMois) {
         let dates = [];
         let dateCourante = new Date(dateInitiale);
 
         for (let i = 0; i < nombreDeMois; i++) {
-            dateCourante.setDate(dateCourante.getDate() + 22); // Ajouter 22 jours
-            dateCourante = AjusterSiJourFerieOuDimanche(dateCourante); // Ajustement
+            dateCourante.setDate(dateCourante.getDate() + 22); 
+            dateCourante = AjusterSiJourFerieOuDimanche(dateCourante);
             dates.push(new Date(dateCourante));
         }
 
         return dates;
     }
 
-    // Ajuster la date si c'est un jour férié ou un dimanche
     function AjusterSiJourFerieOuDimanche(date) {
         while (EstJourFerie(date) || date.getDay() === 0) { // Dimanche = 0
             date.setDate(date.getDate() + 1); // Décaler au lundi suivant
@@ -269,7 +268,6 @@
         return date;
     }
 
-    // Vérifier si c'est un jour férié
     function EstJourFerie(date) {
         return joursFeries.some(jour =>
             jour.date.getDate() === date.getDate() &&
@@ -277,7 +275,6 @@
         );
     }
 
-    // Fonction d'impression du tableau
     function imprimerTableau() {
 		let nombreImpressions = parseInt(document.getElementById('nombreImpressions').value); // Récupérer le nombre d'impressions
         const printWindow = window.open('', '', 'height=500, width=800');
@@ -293,7 +290,6 @@
         printWindow.print();
     }
 
-    // Fonction pour définir la date du jour par défaut dans le datepicker et afficher le message de renouvellement
     function setDateDuJour() {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -302,26 +298,37 @@
         const todayFormatted = `${yyyy}-${mm}-${dd}`;
         document.getElementById('dateInitiale').value = todayFormatted;
 
-        // Calcul de la date de renouvellement possible (22 jours avant aujourd'hui)
         const renouvellementDate = new Date(today);
         renouvellementDate.setDate(renouvellementDate.getDate() - 22);
         const formattedDate = `${String(renouvellementDate.getDate()).padStart(2, '0')}/${String(renouvellementDate.getMonth() + 1).padStart(2, '0')}/${renouvellementDate.getFullYear()}`;
 
-        // Affichage du message d'information
         document.getElementById('dateDerniereFacturation').textContent =  `${formattedDate}`;
     }
 
-    // Assurez-vous que le bouton "Générer les Dates" fonctionne lors du clic
     document.getElementById('generateButton').addEventListener('click', genererRenouvellements);
 
-    // Assurez-vous que le bouton "Imprimer le Tableau" fonctionne lors du clic
     document.getElementById('printButton').addEventListener('click', imprimerTableau);
 
-    // Appeler la fonction pour définir la date par défaut au chargement et charger les jours fériés
     window.onload = async function() {
         await chargerJoursFeries();
-        setDateDuJour(); // Définit la date du jour par défaut et calcule la date de renouvellement
+        setDateDuJour();
     };
+    
+    document.addEventListener("click", function(e) {
+    if (e.target.closest('[action="copier-pressepapier"]')) {
+        e.preventDefault();
+        const link = e.target.closest('[action="copier-pressepapier"]');
+        const dateText = link.getAttribute("data-date");
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(dateText).then(() => {
+                console.info("Date copiée dans le presse-papiers : " + dateText);
+            }).catch(err => {
+                console.info( "Erreur lors de la copie.");
+                console.error(err);
+            });
+        }
+    }
+});
 </script>
 
 </body>
