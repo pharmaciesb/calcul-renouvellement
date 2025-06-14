@@ -117,7 +117,12 @@
                 <label for="nombreRenouvellements">Nombre de renouvellements à générer :</label>
                 <input type="number" id="nombreRenouvellements" class="form-control" value="5" min="1" />
             </div>
-
+			
+			<div class="form-group">
+				<label for="">Nombre de jours entre les renouvellements :</label>
+				<input type="number" id="intervalleRenouvellement" class="form-control" value="22" min="7" />
+			</div>
+			
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -224,7 +229,8 @@
 	function genererRenouvellements() {
 		let dateInitiale = new Date(document.getElementById('dateInitiale').value);
 		let nombreRenouvellements = parseInt(document.getElementById('nombreRenouvellements').value);
-		let renouvellements = CalculerRenouvellements(dateInitiale, nombreRenouvellements);
+		let intervalleRenouvellement = parseInt(document.getElementById('intervalleRenouvellement').value);
+		let renouvellements = CalculerRenouvellements(dateInitiale, nombreRenouvellements, intervalleRenouvellement);
 
 		document.getElementById("renouvellementTable").innerHTML = "";
 
@@ -248,12 +254,12 @@
 		});
 	}
 
-    function CalculerRenouvellements(dateInitiale, nombreDeMois) {
+    function CalculerRenouvellements(dateInitiale, quantite, intervalle) {
         let dates = [];
         let dateCourante = new Date(dateInitiale);
 
-        for (let i = 0; i < nombreDeMois; i++) {
-            dateCourante.setDate(dateCourante.getDate() + 22); 
+        for (let i = 0; i < quantite; i++) {
+            dateCourante.setDate(dateCourante.getDate() + intervalle); 
             dateCourante = AjusterSiJourFerieOuDimanche(dateCourante);
             dates.push(new Date(dateCourante));
         }
